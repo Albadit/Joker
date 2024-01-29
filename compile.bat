@@ -8,6 +8,7 @@ SET "currentDir=%currentDir:~0,-1%"
 SET "scriptFileName=SchoolEasy"
 
 :: List of packages to check
+:: if error openai pip install openai==0.28
 SET "packages=pyinstaller psutil openai keyboard pyperclip"
 
 :: Define your new paths

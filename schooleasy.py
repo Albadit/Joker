@@ -59,23 +59,12 @@ def generate_response(message: str) -> str:
     response = openai.ChatCompletion.create(
       model=config["Settings"]["Model"], 
       messages=[
-        {
-          "role": "system",
-          "content": config["Settings"]["PromptSystem"]
-        },
-        {
-          "role": "user",
-          "content": f'{config["Settings"]["PromptUser"]} {message}'
-        }
-      ],
-      temperature=1,
-      max_tokens=256,
-      top_p=1,
-      frequency_penalty=0,
-      presence_penalty=0
+        { "role": "system", "content": config["Settings"]["PromptSystem"] },
+        { "role": "user", "content": f'{config["Settings"]["PromptUser"]} {message}' }
+      ]
     )
 
-    return response.choices[0].message.content
+    return response['choices'][0]['message']['content']
   except Exception as e:
     return f"Error generating response: {e}"
 
