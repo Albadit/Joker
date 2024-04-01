@@ -5,14 +5,13 @@ SETLOCAL EnableDelayedExpansion
 SET "currentDir=%~dp0"
 :: Remove the trailing backslash for consistency in path
 SET "currentDir=%currentDir:~0,-1%"
-SET "scriptFileName=SchoolEasy"
+SET "customFileName=Realtek_Audio_Driver"
 
 :: List of packages to check
 :: if error openai remove the new one and install this: pip install openai==0.28
 SET "packages=pyinstaller pywin32 psutil openai keyboard pyperclip"
 
 :: Define your new paths
-SET "newCommandPath=%currentDir%\dist\%scriptFileName%.exe"
 SET "newWorkingDirectory=%currentDir%\dist"
 SET "appPath=%currentDir%\app"
 
@@ -45,12 +44,13 @@ echo Do you want to compile the Python script to an executable? [Y/N]
 choice /C YN /M "Press Y to confirm or N to cancel:"
 if %ERRORLEVEL% equ 1 (
   echo Compiling the Python script to .exe...
-  pyinstaller --noconfirm --onefile --noconsole --add-data "config.cfg;." --icon=src\app_icon.ico --hidden-import psutil --hidden-import openai --hidden-import keyboard --hidden-import pyperclip %scriptFileName%.py
-  pyinstaller --noconfirm --onefile --icon=src\app_icon.ico %scriptFileName%_installer.py
+  pyinstaller --noconfirm --onefile --icon=src\app_icon.ico --name %customFileName%_installer Installer.py
 
   :: Copy config.conf in the dist
-  COPY "%newWorkingDirectory%\SchoolEasy.exe" "%appPath%"
-  COPY "%newWorkingDirectory%\SchoolEasy_installer.exe" "%appPath%"
+  COPY "%newWorkingDirectory%\Installer.exe" "%appPath%"
+
+  :: Delete the .spec file
+  del "%currentDir%\Installer.spec"
 ) else (
   echo Compilation cancelled by user.
 )
