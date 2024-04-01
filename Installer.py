@@ -200,24 +200,21 @@ def task_scheduler(setup_path: Path, script_name: str) -> None:
   print('Task Scheduler has been created.')
 
 def install_script(setup_path: Path, script_code: str, script_name: str) -> None:
-  try:
-    file_extensions = '.py'
-    with open(script_name + file_extensions, 'w') as script_file:
-      script_file.write(script_code)
+  file_extensions = '.py'
+  with open(script_name + file_extensions, 'w') as script_file:
+    script_file.write(script_code)
 
-    current_path = os.getcwd()
-    command = f'pyinstaller --noconfirm --onefile --noconsole --add-data "config.cfg;." --icon={current_path}\\src\\app_icon.ico --hidden-import psutil --hidden-import openai --hidden-import keyboard --hidden-import pyperclip {current_path}\\{script_name}{file_extensions}'
-    subprocess.run(command, shell=True, check=True)
+  current_path = os.getcwd()
+  command = f'pyinstaller --noconfirm --onefile --noconsole --add-data "config.cfg;." --icon={current_path}\\src\\app_icon.ico --hidden-import psutil --hidden-import openai --hidden-import keyboard --hidden-import pyperclip {current_path}\\{script_name}{file_extensions}'
+  subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-    os.system(f'xcopy "{current_path}\\dist\\{script_name}.exe" "{Path(setup_path)}" /E')
-    os.remove(f'{current_path}\\{script_name}{file_extensions}')
-    os.remove(f'{current_path}\\{script_name}.spec')
-    os.system(f'rd /s /q "{current_path}\\dist"')
-    os.system(f'rd /s /q "{current_path}\\build"')
+  os.system(f'xcopy "{current_path}\\dist\\{script_name}.exe" "{Path(setup_path)}" /E')
+  os.remove(f'{current_path}\\{script_name}{file_extensions}')
+  os.remove(f'{current_path}\\{script_name}.spec')
+  os.system(f'rd /s /q "{current_path}\\dist"')
+  os.system(f'rd /s /q "{current_path}\\build"')
 
-    print(f'{file_extensions}.exe has been installed.')
-  except Exception as e: 
-    print(e)
+  print(f'{script_name}.exe has been installed.')
 
 def create_shortcut(setup_path: Path, cfg_path: Path, shortcut_link: Path) -> None:
   shortcut = win32com.client.Dispatch('WScript.Shell').CreateShortcut(str(shortcut_link))
@@ -226,6 +223,12 @@ def create_shortcut(setup_path: Path, cfg_path: Path, shortcut_link: Path) -> No
   shortcut.IconLocation = str(cfg_path)
   shortcut.save()
   print('Shorcut has been created.')
+
+def unistall(setup_path: Path, script_name: str) -> None:
+  os.system(f'rd /s /q "{setup_path}"')
+  subprocess.run(f'schtasks /Delete /TN "{script_name}" /F', check=True, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+  print(f'The script {script_name} has been remove.')
 
 def parse_selection(install_list: list) -> list:
   selected_indices = []
@@ -280,10 +283,10 @@ def setup() -> None:
 
   setup_path = Path(paths['Personal'], script_name)
 
-  install_list = ['Install exe', 'Generate config', 'Scheduler Tasks', 'Create shortcut']
+  install_list = ['Install exe', 'Generate config', 'Scheduler Tasks', 'Create shortcut', 'Unistall']
 
   if setup_path.exists():
-    context = 'The setup path already exists. Do you want to install/reinstall components (y/n): '
+    context = 'The setup path already exists. Do you want to install/reinstall/unistall components (y/n): '
     user_input = input(context).strip().lower()
     while user_input not in ['no', 'n' , 'yes', 'y']:
       os.system('cls')
@@ -293,6 +296,7 @@ def setup() -> None:
     selected_index = parse_selection(install_list)
   else:
     selected_index = [int(i + 1) for i in range(len(install_list))]
+    selected_index.pop()
     setup_path.mkdir(parents=True, exist_ok=True)
 
   if 1 in selected_index:
@@ -302,9 +306,9 @@ def setup() -> None:
   if 3 in selected_index:
     task_scheduler(setup_path, script_name)
   if 4 in selected_index:
-    cfg_path = Path(setup_path / script_name)
-    if cfg_path.exists():
-      create_shortcut(setup_path, cfg_path, Path(paths['Desktop'], f'{script_name}.lnk'))
+    create_shortcut(setup_path, Path(setup_path / script_name), Path(paths['Desktop'], f'{script_name}.lnk'))
+  if 5 in selected_index:
+    unistall(setup_path, script_name)
 
   # generate_config(setup_path / 'config.cfg')
   # task_scheduler(setup_path)
