@@ -1,11 +1,11 @@
 import winreg
-import urllib.request
 from pathlib import Path
 import win32com.client
 import ctypes
 import os
 import sys
 import subprocess
+import shutil
 
 script_content = '''
 import psutil
@@ -132,7 +132,7 @@ def create_config(config_path: Path, file_name: str) -> None:
 
   contents = '\n'.join(f'[{section}]\n' + '\n'.join(f'{k} = {v}' for k, v in options.items()) + '\n' for section, options in settings.items())
   Path(config_path / file_name).write_text(contents)
-  print(f'{file_name} has been Generate.')
+  print(f'{file_name} has been Generate successful.')
 
 def task_scheduler(setup_path: Path, script_name: str) -> None:
   # Connect to the Task Scheduler
@@ -197,24 +197,49 @@ def task_scheduler(setup_path: Path, script_name: str) -> None:
   # Register the task
   task_name = f'\\{script_name}'
   root_folder.RegisterTaskDefinition(task_name, task_def, 6, '', '', 3)  # 6 = CreateOrUpdate, 3 = TaskLogonType.InteractiveToken
-  print('Task Scheduler has been created.')
+  print('Task Scheduler has been created successful.')
+
+def install_libraries():
+  libs = ['pyinstaller', 'configparser', 'pyperclip', 'keyboard', 'openai==0.28', 'psutil']
+
+  for lib in libs:
+    command = f'pip install {lib}'
+    subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+  
+  print('All libraries has been installed successful.')
 
 def install_script(setup_path: Path, script_code: str, script_name: str) -> None:
-  file_extensions = '.py'
-  with open(script_name + file_extensions, 'w') as script_file:
+  # install_libraries()
+  create_config(setup_path, 'config.cfg')
+  filepath = str(Path(setup_path / script_name)).replace("\\", "\\\\")
+  with open(filepath + '.py', 'w') as script_file:
     script_file.write(script_code)
 
-  current_path = os.getcwd()
-  command = f'pyinstaller --noconfirm --onefile --noconsole --add-data "config.cfg;." --icon={current_path}\\src\\app_icon.ico --hidden-import psutil --hidden-import openai --hidden-import keyboard --hidden-import pyperclip {current_path}\\{script_name}{file_extensions}'
-  subprocess.run(command, shell=True, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+  icon = input('Please paste the url path of the icon: ')
+  while '.ico' not in icon:
+    icon = input('The icon format need to be (.ico): ')
 
-  os.system(f'xcopy "{current_path}\\dist\\{script_name}.exe" "{Path(setup_path)}" /E')
-  os.remove(f'{current_path}\\{script_name}{file_extensions}')
-  os.remove(f'{current_path}\\{script_name}.spec')
-  os.system(f'rd /s /q "{current_path}\\dist"')
-  os.system(f'rd /s /q "{current_path}\\build"')
+  command = f'pyinstaller --noconfirm --onefile --noconsole --add-data "config.cfg;." --icon={icon.replace('\\', '\\\\')} --hidden-import psutil --hidden-import openai --hidden-import keyboard --hidden-import pyperclip {filepath + '.py'}'
+  try:
+    # Note: Using subprocess.Popen instead of subprocess.run
+    with subprocess.Popen(command, cwd=setup_path, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True) as process:
+      # Read output and error streams
+      stdout, stderr = process.communicate()  # Waits for process to complete
+      print("STDOUT:")
+      print(stdout)
+      print("STDERR:")
+      print(stderr)
+  except Exception as err:
+    print('Error encountered:')
+    print(err)
 
-  print(f'{script_name}.exe has been installed.')
+  os.system(f'move "{setup_path}\\dist\\{script_name + '.exe'}" "{setup_path}"')
+  os.remove(filepath + '.spec')
+  os.remove(filepath + '.py')
+  os.removedirs(Path(setup_path / 'dist'))
+  shutil.rmtree(Path(setup_path / 'build'))
+
+  print(f'{script_name + '.exe'}.exe has been installed successful.')
 
 def create_shortcut(setup_path: Path, cfg_path: Path, shortcut_link: Path) -> None:
   shortcut = win32com.client.Dispatch('WScript.Shell').CreateShortcut(str(shortcut_link))
@@ -222,13 +247,20 @@ def create_shortcut(setup_path: Path, cfg_path: Path, shortcut_link: Path) -> No
   shortcut.WorkingDirectory = str(setup_path)
   shortcut.IconLocation = str(cfg_path)
   shortcut.save()
-  print('Shorcut has been created.')
+  print('Shorcut has been created successful.')
 
 def unistall(setup_path: Path, script_name: str) -> None:
-  os.system(f'rd /s /q "{setup_path}"')
-  subprocess.run(f'schtasks /Delete /TN "{script_name}" /F', check=True, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+  try:
+    shutil.rmtree(Path(setup_path))
+  except Exception as er:
+    print(er)
 
-  print(f'The script {script_name} has been remove.')
+  try:
+    subprocess.run(f'schtasks /Delete /TN "{script_name}" /F', check=True, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+  except Exception as er:
+    print(er)
+
+  print(f'The script {script_name} has been remove successful.')
 
 def parse_selection(install_list: list) -> list:
   selected_indices = []
@@ -283,7 +315,7 @@ def setup() -> None:
 
   setup_path = Path(paths['Personal'], script_name)
 
-  install_list = ['Install exe', 'Generate config', 'Scheduler Tasks', 'Create shortcut', 'Unistall']
+  install_list = ['Install exe', 'Scheduler Tasks', 'Unistall']
 
   if setup_path.exists():
     context = 'The setup path already exists. Do you want to install/reinstall/unistall components (y/n): '
@@ -302,12 +334,8 @@ def setup() -> None:
   if 1 in selected_index:
     install_script(setup_path, script_content, script_name)
   if 2 in selected_index:
-    create_config(setup_path, 'config.cfg')
-  if 3 in selected_index:
     task_scheduler(setup_path, script_name)
-  if 4 in selected_index:
-    create_shortcut(setup_path, Path(setup_path / script_name), Path(paths['Desktop'], f'{script_name}.lnk'))
-  if 5 in selected_index:
+  if 3 in selected_index:
     unistall(setup_path, script_name)
 
   # generate_config(setup_path / 'config.cfg')
@@ -322,5 +350,5 @@ if __name__ == '__main__':
 
   exit_text = 'Press Enter to continue...'
   setup()
-  print('Your setup is done. You\'re ready to go.')
+  print('Your done. You\'re ready to go.')
   input(exit_text)

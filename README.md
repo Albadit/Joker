@@ -1,10 +1,10 @@
-# Setup SchoolEasy guide
+# Setup Joker guide
 
-This guide will walk you through the process of setup SchoolEasy on your system. This tools are commonly used for developing modern applications projects.
+This guide will walk you through the process of setup Joker on your system. This tools are commonly used for developing modern applications projects.
 
 ## Table of Contents
 - [Installing Python](#installing-python)
-- [Setup SchoolEasy](#setup-schooleasy)
+- [Setup Joker](#setup-joker)
 
 ## Installing Python
 
@@ -37,14 +37,14 @@ With `pip` installed, you can install the `pyperclip`, `keyboard`, `openai` and 
 pip install configparser
 pip install pyperclip
 pip install keyboard
-pip install openai
+pip install openai==0.28
 pip install psutil
 ```
 </ul>
 
-## Setup SchoolEasy
+## Setup Joker
 
-After successfully installing Python on your machine, follow these steps to compile your code and schedule tasks using `schooleasy.xml`.
+After successfully installing Python on your machine, follow these steps to compile your code and schedule tasks using `joker.xml`.
 
 ### Run the Compile Script
 
@@ -57,7 +57,7 @@ After successfully installing Python on your machine, follow these steps to comp
 
 1. Open Task Scheduler on your computer.
 2. In the Action menu, select `Import Task...`.
-3. Browse to the location of your `schooleasy.xml` file.
+3. Browse to the location of your `joker.xml` file.
 4. Select the file and click `Open` to import it into Task Scheduler.
 
 Ensure that you check the task settings and configure them as necessary to suit your scheduling requirements.
@@ -73,4 +73,4 @@ Remember to explore the official documentation of each tool to learn more about 
 
 If you encounter any issues or have questions, feel free to consult online forums, communities, or the documentation specific to each tool.
 
-Happy coding and enjoy building amazing applications with SchoolEasy!
+Happy coding and enjoy building amazing applications with Joker!

@@ -5,7 +5,7 @@ SETLOCAL EnableDelayedExpansion
 SET "currentDir=%~dp0"
 :: Remove the trailing backslash for consistency in path
 SET "currentDir=%currentDir:~0,-1%"
-SET "customFileName=Realtek_Audio_Driver"
+SET "customFileName=joker"
 
 :: List of packages to check
 :: if error openai remove the new one and install this: pip install openai==0.28
@@ -47,10 +47,10 @@ if %ERRORLEVEL% equ 1 (
   pyinstaller --noconfirm --onefile --icon=src\app_icon.ico --name %customFileName%_installer Installer.py
 
   :: Copy config.conf in the dist
-  COPY "%newWorkingDirectory%\Installer.exe" "%appPath%"
+  :: COPY "%newWorkingDirectory%\Installer.exe" "%appPath%"
 
   :: Delete the .spec file
-  del "%currentDir%\Installer.spec"
+  del "%currentDir%\%customFileName%_installer.spec"
 ) else (
   echo Compilation cancelled by user.
 )
