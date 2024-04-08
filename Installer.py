@@ -209,7 +209,7 @@ def install_libraries():
   print('All libraries has been installed successful.')
 
 def install_script(setup_path: Path, script_code: str, script_name: str) -> None:
-  # install_libraries()
+  install_libraries()
   create_config(setup_path, 'config.cfg')
   filepath = str(Path(setup_path / script_name)).replace("\\", "\\\\")
   with open(filepath + '.py', 'w') as script_file:

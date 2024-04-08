@@ -1,0 +1,2 @@
+- check update after making a folder
+- add right mouse to copy
