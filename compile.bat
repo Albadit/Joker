@@ -6,10 +6,11 @@ SET "currentDir=%~dp0"
 :: Remove the trailing backslash for consistency in path
 SET "currentDir=%currentDir:~0,-1%"
 SET "customFileName=joker"
+SET "configFile=config.ini"
 
 :: List of packages to check
 :: if error openai remove the new one and install this: pip install openai==0.28
-SET "packages=pyinstaller pywin32 psutil openai keyboard pyperclip"
+SET "packages=pyinstaller pywin32 psutil openai pyperclip pynput"
 
 :: Define your new paths
 SET "newWorkingDirectory=%currentDir%\dist"
@@ -44,13 +45,17 @@ echo Do you want to compile the Python script to an executable? [Y/N]
 choice /C YN /M "Press Y to confirm or N to cancel:"
 if %ERRORLEVEL% equ 1 (
   echo Compiling the Python script to .exe...
-  pyinstaller --noconfirm --onefile --icon=src\app_icon.ico --name %customFileName%_installer Installer.py
+  pyinstaller --noconfirm --onefile --icon=src\icon.ico --name %customFileName%_installer Installer.py
+  pyinstaller --noconfirm --onefile --noconsole --icon=src\icon.ico --add-data "%configFile%;." --hidden-import psutil --hidden-import openai --hidden-import pynput --hidden-import pyperclip --name %customFileName% script.py
 
-  :: Copy config.conf in the dist
-  :: COPY "%newWorkingDirectory%\Installer.exe" "%appPath%"
+  move "%currentDir%\dist\%customFileName%.exe" "%currentDir%\app"
+  move "%currentDir%\dist\%customFileName%_installer.exe" "%currentDir%\app"
 
-  :: Delete the .spec file
   del "%currentDir%\%customFileName%_installer.spec"
+  del "%currentDir%\%customFileName%.spec"
+
+  rd /s /q "%currentDir%\dist"
+  rd /s /q "%currentDir%\build"
 ) else (
   echo Compilation cancelled by user.
 )
