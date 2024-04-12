@@ -147,10 +147,13 @@ def setup(script_path, script_name):
   download_exe(script_path, script_name)
 
 def menu():
-  folder_path = "C:\\Users\\ardit\\Documents"
-  script_name = "zzz"
+  # folder_path = "C:\\Users\\ardit\\Documents"
+  # script_name = "zzz"
+
+  folder_path = input("Folder path of your script: ")
+  script_name = input("Script name: ")
   script_path = os.path.join(folder_path, script_name)
-  
+
   if not os.path.exists(script_path):
     os.makedirs(script_path, exist_ok=True)
     print("The folder was created successfully.\n")
