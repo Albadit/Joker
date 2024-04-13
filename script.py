@@ -51,7 +51,6 @@ def display_window(answer: str) -> None:
   root.mainloop()
 
 def generate_response(message: str) -> str:
-  # Generate a response for the given message using the OpenAI API.
   try:
     response = openai.ChatCompletion.create(
       model=config["openai"]["model"], 

@@ -31,12 +31,12 @@ After installing Python, you may need additional packages for your specific proj
 
 #### Installing pyperclip, keyboard, and openai
 
-With `pip` installed, you can install the `pyperclip`, `keyboard`, `openai` and `psutil` packages using the following commands in your Command Prompt:
+With `pip` installed, you can install the `pyperclip`, `pynput`, `openai` and `psutil` packages using the following commands in your Command Prompt:
 
 ```
 pip install configparser
 pip install pyperclip
-pip install keyboard
+pip install pynput
 pip install openai==0.28
 pip install psutil
 ```
