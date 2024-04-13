@@ -4,6 +4,7 @@ import ctypes
 import urllib.request
 from configparser import ConfigParser
 from win32com.client import Dispatch
+import shutil
 
 def exit_sys():
   input("Press Enter to close...")
@@ -126,7 +127,7 @@ def delete_setup(script_path, script_name):
   if permission("Do you want to uninstall it?"):
     delete_task_scheduler(script_name)
     try:
-      os.remove(script_path)
+      shutil.rmtree(script_path)
       print("Folder and its contents have been deleted.")
     except Exception as e:
       print(f"Error: {str(e)}")

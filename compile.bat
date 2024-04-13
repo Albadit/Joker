@@ -45,7 +45,7 @@ echo Do you want to compile the Python script to an executable? [Y/N]
 choice /C YN /M "Press Y to confirm or N to cancel:"
 if %ERRORLEVEL% equ 1 (
   echo Compiling the Python script to .exe...
-  pyinstaller --noconfirm --onefile --icon=src\icon.ico --name %customFileName%_installer Installer.py
+  pyinstaller --noconfirm --onefile --icon=src\icon.ico --name %customFileName%_installer setup.py
   pyinstaller --noconfirm --onefile --noconsole --icon=src\icon.ico --add-data "%configFile%;." --hidden-import psutil --hidden-import openai --hidden-import pynput --hidden-import pyperclip --name %customFileName% script.py
 
   move "%currentDir%\dist\%customFileName%.exe" "%currentDir%\app"
