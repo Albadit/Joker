@@ -8,7 +8,8 @@ import tkinter as tk
 import sys
 import os
 
-latest = ""
+latest = ''
+pause = True
 config_name = 'config.ini'
 
 def is_running() -> bool:
@@ -65,7 +66,7 @@ def generate_response(message: str) -> str:
     return f"Error generating response: {e}"
 
 def on_key_press(key):
-  global latest
+  global pause, latest
 
   try:
     key_name = key.char or key.name
@@ -74,12 +75,14 @@ def on_key_press(key):
   
   key_values = [value for value in config['key'].values()]
   if key_name in key_values:
-    copied_text = pyperclip.paste()
-    if key_name == config["key"]["key_pop"]:
+    if key_name == config["key"]["key_exit"]:
+      pause = not pause
+    elif key_name == config["key"]["key_pop"] and pause:
+      copied_text = pyperclip.paste()
       response = generate_response(copied_text)
       latest = response
       display_window(response)
-    elif key_name == config["key"]["key_repop"]:
+    elif key_name == config["key"]["key_repop"] and pause:
       display_window(latest)
 
 def on_key_release(key):

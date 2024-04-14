@@ -112,7 +112,7 @@ def config(script_path, config_name):
     'key': {
       'key_pop': '1',
       'key_repop': '2',
-      'key_exit': 'esc'
+      'key_exit': 'Key.esc'
     }
   }
   
