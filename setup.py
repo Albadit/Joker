@@ -110,8 +110,8 @@ def config(script_path, config_name):
       'display_time': '3000'
     },
     'key': {
-      'key_pop': '~',
-      'key_repop': '`',
+      'key_pop': '1',
+      'key_repop': '2',
       'key_exit': 'esc'
     }
   }

@@ -65,7 +65,7 @@ def generate_response(message: str) -> str:
     return f"Error generating response: {e}"
 
 def on_key_press(key):
-  global config, latest
+  global latest
 
   try:
     key_name = key.char or key.name
@@ -74,11 +74,10 @@ def on_key_press(key):
   
   key_values = [value for value in config['key'].values()]
   if key_name in key_values:
-    config = load_config(config_name)
     copied_text = pyperclip.paste()
     if key_name == config["key"]["key_pop"]:
-      latest = response
       response = generate_response(copied_text)
+      latest = response
       display_window(response)
     elif key_name == config["key"]["key_repop"]:
       display_window(latest)
