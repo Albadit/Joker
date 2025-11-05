@@ -125,7 +125,7 @@ def config(script_path: str, config_name: str) -> bool:
     },
     'openai': {
       'api_key': '',
-      'model': 'gpt-4',
+      'model': 'gpt-5',
       'prompt_system': 'You are a helpful assistant specialized in answering multiple-choice questions.',
       'prompt_user': 'Give me only the correct answer and nothing else:'
     },

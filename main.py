@@ -47,6 +47,9 @@ def load_config(config_file: str) -> configparser.ConfigParser:
     'window': ['alpha', 'display_time', 'position']
   }
   
+  # Keys that can be empty
+  optional_keys = {'prompt_system', 'prompt_user'}
+  
   # Validate required sections and keys
   for section, keys in required_config.items():
     if not config.has_section(section):
@@ -56,11 +59,52 @@ def load_config(config_file: str) -> configparser.ConfigParser:
       if not config.has_option(section, key):
         raise ValueError(f"Missing required key '{key}' in section '[{section}]'")
       
-      value = config.get(section, key).strip()
-      if not value:
-        raise ValueError(f"Empty value for '{key}' in section '[{section}]'. Please configure it in {config_file}")
+      # Only validate non-empty for keys that aren't optional
+      if key not in optional_keys:
+        value = config.get(section, key).strip()
+        if not value:
+          raise ValueError(f"Empty value for '{key}' in section '[{section}]'. Please configure it in {config_file}")
   
   return config
+
+def calculate_window_dimensions(answer: str, screen_width: int, screen_height: int, position: str) -> tuple[int, int]:
+  """Calculate optimal window dimensions based on content and screen size.
+  
+  Args:
+    answer: The text content to display
+    screen_width: Screen width in pixels
+    screen_height: Screen height in pixels
+    position: Window position string (e.g., "+300+200")
+  
+  Returns:
+    Tuple of (width_in_chars, height_in_lines)
+  """
+  # Parse position from config (e.g., "+300+200")
+  x_offset = int(position.split('+')[1]) if '+' in position else 300
+  y_offset = int(position.split('+')[2]) if position.count('+') >= 2 else 200
+  
+  # Calculate maximum available dimensions
+  max_width_pixels = screen_width - x_offset - 20  # 20px margin
+  max_height_pixels = screen_height - y_offset - 40  # 40px margin for taskbar
+  
+  # Convert pixels to approximate character/line dimensions
+  # Roughly 8 pixels per character, 20 pixels per line
+  max_width_chars = max_width_pixels // 8
+  max_height_lines = max_height_pixels // 20
+  
+  # Calculate dynamic dimensions based on text
+  lines = answer.split('\n')
+  max_line_length = max(len(line) for line in lines) if lines else 0
+  num_lines = len(lines)
+  
+  # Calculate width (characters) - Min 30, max based on screen size
+  width = min(max(30, max_line_length + 5), max_width_chars)
+  
+  # Calculate height (lines) - Min 3, max based on screen size
+  height = min(max(3, num_lines + 2), max_height_lines)
+  
+  return width, height
+
 
 def display_window(answer: str) -> None:
   """Display a temporary popup window with the response."""
@@ -74,14 +118,25 @@ def display_window(answer: str) -> None:
   popup.title("Response")
   popup.overrideredirect(True)
   popup.attributes("-alpha", float(config["window"]["alpha"]))
-  popup.geometry(config["window"]["position"])
   popup.attributes("-topmost", True)
 
+  # Get screen dimensions
+  screen_width = root.winfo_screenwidth()
+  screen_height = root.winfo_screenheight()
+  position = config["window"]["position"]
+  
+  # Calculate optimal dimensions
+  width, height = calculate_window_dimensions(answer, screen_width, screen_height, position)
+  
   # Add text widget with wrapping for long responses
-  text_widget = tk.Text(popup, wrap=tk.WORD, padx=10, pady=10, width=50, height=10)
+  text_widget = tk.Text(popup, wrap=tk.WORD, padx=10, pady=10, width=width, height=height)
   text_widget.insert("1.0", answer)
   text_widget.config(state=tk.DISABLED)
   text_widget.pack()
+  
+  # Update window to get actual size, then position it
+  popup.update_idletasks()
+  popup.geometry(position)
 
   display_time = int(config["window"]["display_time"])
 
